@@ -3,41 +3,41 @@ import java.io.*;
 import java.net.*;
 
 /**
- * Обработчик подключения клиента.
+ * TCP/IP client connection handler.
  *
- * Запускает обработку в отдельном потоке.
- * Принимает сообщение от GPS-трэкера и передаёт его на web-сервер.
+ * Runs in separate thread.
+ * Accepts message from the GPS-tracker via TCP/IP and forwards it to the Web-server via HTTP.
  */
 public class ClientHandler implements Runnable {
     /**
-     * Сокет клиента.
+     * Client socket.
      */
     private Socket clientSocket;
 
     /**
-     * URL web-сервера.
+     * Web-server URL.
      */
     private String url;
 
     /**
-     * Входной буфер клиентского сокета.
+     * Client socket IN-buffer.
      */
     private BufferedReader in;
 
     /**
-     * Выходной буфер клиентского сокета.
+     * Client socket OUT-buffer.
      */
     private PrintWriter out;
 
     /**
-     * Поток обработчика.
+     * Handler thread.
      */
     private Thread runningThread;
 
     /**
-     * Конструктор.
-     * @param clientSocket сокет клиента.
-     * @param url          URL web-сервера.
+     * Construct.
+     * @param clientSocket client socket.
+     * @param url          Web-server URL.
      */
     public ClientHandler(Socket clientSocket, String url) {
         this.clientSocket = clientSocket;
@@ -71,7 +71,8 @@ public class ClientHandler implements Runnable {
     }
 
     /**
-     * Прерывает поток обработчика, закрывает буферы и отключает сокет клиента.
+     * Disconnect client socket.
+     * Interrupts handler thread, closes buffers and disconnects client.
      */
     private void disconnect() {
         System.out.print("Disconnecting ... ");
@@ -109,7 +110,7 @@ public class ClientHandler implements Runnable {
     }
 
     /**
-     * Запускает обработку клиентского соединения.
+     * Runs client socket handler.
      */
     @Override
     public void run() {
@@ -138,12 +139,12 @@ public class ClientHandler implements Runnable {
     }
 
     /**
-     * Отправляет сообщение на web-сервер.
-     * @param message сообщение от GPS-трэкера.
+     * Sends message to Web-server via HTTP.
+     * @param message RAW message from the GPS-tracker.
      */
     private void sendToWebServer(String message) {
         try {
-            // Кодирование сообщения в URLEncoded формат
+            // Encode the message to URLEncoded format
             String urlParameters = "message=" + URLEncoder.encode(message, "UTF-8");
 
             URL webServerUrl = new URL(url);
@@ -155,13 +156,13 @@ public class ClientHandler implements Runnable {
             connection.setDoInput(true);
             connection.setDoOutput(true);
 
-            // Отправка сообщения
+            // Send the message to the server
             DataOutputStream out = new DataOutputStream (connection.getOutputStream());
             out.writeBytes(urlParameters);
             out.flush();
             out.close();
 
-            // Чтение ответа сервера
+            // Read response from the server
             BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
             String inputLine;
             String result = "";

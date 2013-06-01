@@ -5,20 +5,25 @@ import java.net.Socket;
 import java.util.Properties;
 
 /**
- * Сервер TCP/IP.
+ * TCP/IP Server.
  *
- * Принимает соединения на заданном порту и передаёт их на обработку в ClientHandler.
+ * Listens port, accepts client connections and forwards them to ClientHandler in separate thread.
  */
 public class Server {
+    /**
+     * Master server socket.
+     */
     private static ServerSocket serverSocket = null;
 
     /**
-     * Конфигурация сервера.
+     * Server configuration.
      */
     private static Properties config = new Properties();
 
     /**
-     * Загружает конфигурацию из файла config.properties.
+     * Loads configuration from file 'config.properties'.
+     * First it checks user defined 'config.properties' file in the current working directory.
+     * If file does not exist it loads predefined file from server classpath.
      */
     private static void initConfig() {
         System.out.print("Loading user config ... ");
@@ -45,14 +50,14 @@ public class Server {
     }
 
     /**
-     * Точка входа.
-     * @param args параметры запуска приложения
+     * Main entry point.
+     * @param args application command line parameters
      */
     public static void main(String[] args) {
-        // Загрузка свойств
+        // Load configuration
         initConfig();
 
-        // Запуск сервера на указанном порту
+        // Run server on the selected port
         int port = Integer.parseInt(config.getProperty("server.port"));
         System.out.print("Starting server on port " + port + " ... ");
         try {
@@ -64,13 +69,13 @@ public class Server {
         }
         System.out.print("done\n");
 
-        // Прием подключений
+        // Accept client connections
         System.out.print("Awaiting client connection ...\n");
         while (true) {
             try {
                 Socket clientSocket = serverSocket.accept();
 
-                // Запуск отдельного потока обработчика сообщений
+                // Run separate thread for client handler
                 new ClientHandler(clientSocket, config.getProperty("handler.url"));
             }
             catch (IOException e) {
